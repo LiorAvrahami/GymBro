@@ -211,7 +211,10 @@ object Repo {
                 AppLog.i(TAG, "read the folder's data", "file" to name, "bytes" to text.length, "savedAt" to d.savedAt)
                 return d
             } catch (e: Exception) {
-                AppLog.e(TAG, "the folder's data cannot be read", e, "file" to name)
+                // kept aside under another name, never overwritten
+                val aside = "gymbro_data.broken-${System.currentTimeMillis()}.json"
+                val moved = try { f.renameTo(aside) } catch (_: Exception) { false }
+                AppLog.e(TAG, "the folder's data cannot be read; it is set aside", e, "file" to name, "asideAs" to aside, "moved" to moved)
             }
         }
         return null
