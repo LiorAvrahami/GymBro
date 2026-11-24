@@ -9,7 +9,9 @@ the reps, the difficulty and the weight, and watch your progress on the statisti
 - **Your data is never lost**: at the first start GymBro asks for a folder (e.g. Documents; it makes `GymBro/` inside).
   The data (`gymbro_data.json`), the photos (`images/`), a daily backup (`backups/`, 60 days) and the log
   (`gymbro_log.jsonl`) are kept there as well as in the app. Android does not delete that folder on an update or on
-  uninstall; after a reinstall, choose the same folder and everything comes back.
+  uninstall; after a reinstall, choose the same folder and everything comes back. When the app's copy and the folder's
+  copy differ (a reinstall, a restore by Android's backup, another folder chosen) they are merged, never overwritten:
+  every station and every set of both is kept, and a deleted set stays deleted (`core/.../Merge.kt`).
 
 ## The screens (the user's layout draft, `design/app_layout.free`, a Lunacy file: a zip of JSON pages)
 
@@ -40,6 +42,9 @@ the reps, the difficulty and the weight, and watch your progress on the statisti
 - `GYMBRO_SKIP_ANDROID=1 gradle :core:test` runs where there is no Android SDK (the cloud session that maintains this
   project has none); GitHub builds the app (`.github/workflows/build.yml`, `tools/ci_build.sh`).
 - `python tools/check_app.py` checks resources, ids and the manifest before pushing.
+- `python tools/read_export.py GymBro_export_<time>.json [--images DIR] [--grep TEXT] [--log N]` reads an export
+  for diagnostics: the phone, the storage, the stations and QR codes, the sets, the photos, and the log's warnings,
+  errors and last lines.
 - Icons: [Lucide](https://lucide.dev) (ISC licence, `design/lucide/LICENSE`), converted by `design/make_ui_icons.py`.
 
 The structure follows the 6SteP project (https://github.com/LiorAvrahami/6SteP).
