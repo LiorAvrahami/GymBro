@@ -48,3 +48,9 @@ the reps, the difficulty and the weight, and watch your progress on the statisti
 - Icons: [Lucide](https://lucide.dev) (ISC licence, `design/lucide/LICENSE`), converted by `design/make_ui_icons.py`.
 
 The structure follows the 6SteP project (https://github.com/LiorAvrahami/6SteP).
+
+## Signing
+
+`app/keystore/gymbro.p12` is committed so that every build is signed with the same key and each APK installs over the
+previous one (an update that keeps the app's copy of the data). Anyone with this repository can sign an app that
+installs over GymBro, so make the repository private if that matters.
