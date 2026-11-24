@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A new station, or editing one (design/app_layout.free, page "NewStation"): the name; the photo and the QR scanner side
+     by side; the machine's weight increment; delete and save at the bottom. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="14dp">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <EditText
+                android:id="@+id/edit_name"
+                android:layout_width="match_parent"
+                android:layout_height="72dp"
+                android:background="@drawable/bg_tile"
+                android:gravity="center"
+                android:hint="Enter station name"
+                android:importantForAutofill="no"
+                android:inputType="textCapSentences"
+                android:maxLines="1"
+                android:paddingHorizontal="16dp"
+                android:textColor="@color/text"
+                android:textColorHint="@color/text_dim"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:orientation="horizontal">
+
+                <org.lior.gymbro.SquareFrameLayout
+                    android:id="@+id/edit_photo"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_tile"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:padding="3dp">
+
+                    <ImageView
+                        android:id="@+id/edit_photo_image"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:contentDescription="Take the station's picture"
+                        android:scaleType="centerCrop" />
+
+                    <TextView
+                        android:id="@+id/edit_photo_hint"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="bottom"
+                        android:gravity="center"
+                        android:padding="6dp"
+                        android:text="Take the station's picture"
+                        android:textColor="@color/text_dim"
+                        android:textSize="12sp" />
+
+                    <ImageView
+                        android:id="@+id/edit_photo_add"
+                        android:layout_width="46dp"
+                        android:layout_height="46dp"
+                        android:layout_gravity="bottom|end"
+                        android:layout_margin="6dp"
+                        android:background="@drawable/bg_plus_badge"
+                        android:contentDescription="Add another picture"
+                        android:padding="9dp"
+                        android:src="@drawable/ic_add"
+                        android:visibility="gone"
+                        app:tint="#7A7A7A" />
+                </org.lior.gymbro.SquareFrameLayout>
+
+                <org.lior.gymbro.SquareFrameLayout
+                    android:id="@+id/edit_qr_frame"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_tile"
+                    android:padding="3dp">
+
+                    <androidx.camera.view.PreviewView
+                        android:id="@+id/edit_preview"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        app:scaleType="fillCenter" />
+
+                    <TextView
+                        android:id="@+id/edit_qr_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="bottom"
+                        android:background="#B0000000"
+                        android:gravity="center"
+                        android:maxLines="4"
+                        android:ellipsize="end"
+                        android:padding="6dp"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp" />
+
+                    <ImageButton
+                        android:id="@+id/edit_qr_clear"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_gravity="top|end"
+                        android:layout_margin="4dp"
+                        android:background="@drawable/bg_badge"
+                        android:contentDescription="Remove the QR code"
+                        android:padding="9dp"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/ic_close"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/edit_camera_off"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:padding="8dp"
+                        android:text="Tap to let GymBro use the camera for QR codes"
+                        android:textColor="#FFFFFF"
+                        android:visibility="gone" />
+                </org.lior.gymbro.SquareFrameLayout>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/edit_thumbs_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Pictures: tap one to make it the main picture, long-press to remove it"
+                android:textColor="@color/text_dim"
+                android:textSize="12sp"
+                android:visibility="gone" />
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp">
+
+                <LinearLayout
+                    android:id="@+id/edit_thumbs"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal" />
+            </HorizontalScrollView>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:background="@drawable/bg_tile"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="14dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Weight increment on the machine (kg)"
+                    android:textColor="@color/label_gray"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/edit_increment"
+                    android:layout_width="110dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:importantForAutofill="no"
+                    android:inputType="numberDecimal"
+                    android:selectAllOnFocus="true"
+                    android:text="5"
+                    android:textColor="@color/label_gray"
+                    android:textSize="30sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="88dp"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/edit_delete"
+            android:layout_width="88dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_danger"
+            android:contentDescription="Delete this station"
+            android:padding="24dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_trash"
+            android:visibility="gone" />
+
+        <ImageButton
+            android:id="@+id/edit_cancel"
+            android:layout_width="88dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/bg_tile"
+            android:contentDescription="Back without saving"
+            android:padding="24dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_back" />
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <LinearLayout
+            android:id="@+id/edit_save"
+            android:layout_width="160dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_submit"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@drawable/ic_check" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Save"
+                android:textColor="#FFFFFF"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

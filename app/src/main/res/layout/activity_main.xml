@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The launcher (design/app_layout.free, page "Launcher"): statistics, add station and the QR scanner's view on top;
+     every station below, all on one screen. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <TextView
+        android:id="@+id/main_banner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/bg_banner"
+        android:padding="10dp"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="110dp"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/main_stats"
+            android:layout_width="110dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_tile"
+            android:contentDescription="Statistics"
+            android:padding="28dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_stats" />
+
+        <ImageButton
+            android:id="@+id/main_add"
+            android:layout_width="110dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/bg_tile"
+            android:contentDescription="Add a station"
+            android:padding="26dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_add" />
+
+        <FrameLayout
+            android:id="@+id/main_camera_frame"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="10dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_tile"
+            android:padding="3dp">
+
+            <androidx.camera.view.PreviewView
+                android:id="@+id/main_preview"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:scaleType="fillCenter" />
+
+            <TextView
+                android:id="@+id/main_scan_hint"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:background="#80000000"
+                android:gravity="center"
+                android:padding="3dp"
+                android:text="Scan a station's QR"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/main_camera_off"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:padding="6dp"
+                android:text="Tap to let GymBro use the camera for QR codes"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:visibility="gone" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="12dp"
+        android:layout_weight="1">
+
+        <org.lior.gymbro.StationGrid
+            android:id="@+id/main_grid"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <TextView
+            android:id="@+id/main_empty"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:padding="24dp"
+            android:text="No stations yet.\n\nTap + to add the first one: give it a name, take its picture, and scan its QR code if it has one."
+            android:textColor="@color/text_dim"
+            android:textSize="18sp"
+            android:visibility="gone" />
+    </FrameLayout>
+</LinearLayout>

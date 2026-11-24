@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- the layout draft's colours (design/app_layout.free) -->
+    <color name="bg">#11104A</color>
+    <color name="tile">#0E4C78</color>
+    <color name="tile_border">#072E4A</color>
+    <color name="badge">#3C4E7A</color>
+    <color name="accent">#4FC3F7</color>
+    <color name="submit">#2E9E5B</color>
+    <color name="danger">#C62828</color>
+    <color name="text">#FFFFFF</color>
+    <color name="text_dim">#A9B4CC</color>
+    <color name="label_gray">#B0B0B0</color>
+    <color name="card">#1B1A5E</color>
+    <color name="scrim">#99000000</color>
+</resources>

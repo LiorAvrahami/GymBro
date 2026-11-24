@@ -1,0 +1,70 @@
+name: build
+
+# Every push that changes the app builds it: core's tests, then the signed APK, published as a GitHub release
+# (download GymBro.apk from the release on the phone). Builds of main are the "latest" release; builds of other
+# branches are pre-releases named after the branch.
+on:
+  push:
+    paths:
+      - 'app/**'
+      - 'core/**'
+      - '*.gradle.kts'
+      - 'gradle.properties'
+      - 'tools/ci_build.sh'
+      - '.github/workflows/**'
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: "platforms;android-34 build-tools;34.0.0"
+
+      - name: Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: "8.7"
+
+      - name: Test core and build the signed release APK
+        run: bash tools/ci_build.sh
+        env:
+          BUILD_NUMBER: ${{ github.run_number }}
+
+      - name: Name the APK
+        run: cp app/build/outputs/apk/release/app-release.apk GymBro.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GymBro-apk
+          path: GymBro.apk
+
+      - name: Publish as a release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name == 'main' && format('v{0}', github.run_number) || format('build-{0}', github.run_number) }}
+          target_commitish: ${{ github.sha }}
+          name: GymBro build ${{ github.run_number }}${{ github.ref_name != 'main' && format(' ({0})', github.ref_name) || '' }}
+          prerelease: ${{ github.ref_name != 'main' }}
+          make_latest: ${{ github.ref_name == 'main' && 'true' || 'false' }}
+          body: |
+            Download GymBro.apk below and open it on the phone. The first time, Android asks to allow installing apps from your browser.
+            Every build is signed with the same key, so it installs over the previous one and keeps your data.
+          files: GymBro.apk
