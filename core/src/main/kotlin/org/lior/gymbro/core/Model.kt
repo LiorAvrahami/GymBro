@@ -50,12 +50,14 @@ data class StationUse(
 data class GymData(
     val schemaVersion: Int = SCHEMA_VERSION,
     val createdAt: Long,
-    /** When this data was last saved (epoch ms): the newer of two copies wins at startup. */
+    /** When this data was last saved (epoch ms). */
     val savedAt: Long = 0,
     /** How many times this data has been saved since it was created. */
     val saveCount: Long = 0,
     val stations: List<Station> = emptyList(),
     val uses: List<StationUse> = emptyList(),
+    /** The ids of deleted sets, so that a merge with an older copy does not bring them back (see [Merge]). */
+    val deletedUseIds: List<String> = emptyList(),
 ) {
     fun station(id: String): Station? = stations.firstOrNull { it.id == id }
     fun stationByQr(value: String): Station? = stations.firstOrNull { !it.deleted && it.qrValue == value }

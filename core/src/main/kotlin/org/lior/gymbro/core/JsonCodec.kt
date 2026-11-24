@@ -17,6 +17,7 @@ object JsonCodec {
         put("saveCount", d.saveCount)
         put("stations", JSONArray().apply { d.stations.forEach { put(stationToJson(it)) } })
         put("uses", JSONArray().apply { d.uses.forEach { put(useToJson(it)) } })
+        put("deletedUseIds", JSONArray().apply { d.deletedUseIds.forEach { put(it) } })
     }
 
     fun fromJson(o: JSONObject): GymData {
@@ -29,6 +30,7 @@ object JsonCodec {
             saveCount = o.optLong("saveCount", 0),
             stations = stations ?: emptyList(),
             uses = uses ?: emptyList(),
+            deletedUseIds = o.optJSONArray("deletedUseIds")?.let { a -> (0 until a.length()).map { a.getString(it) } } ?: emptyList(),
         )
     }
 

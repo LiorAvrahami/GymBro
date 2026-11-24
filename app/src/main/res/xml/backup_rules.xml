@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android's own backup (Android 6 to 11) may keep the app's copy of the data, but not the setting that names the data
+     folder: the folder's access permission is not restored with it, so after a reinstall GymBro asks for the folder
+     again (and merges what it finds there with whatever was restored). -->
+<full-backup-content>
+    <exclude domain="sharedpref" path="gymbro.xml" />
+</full-backup-content>

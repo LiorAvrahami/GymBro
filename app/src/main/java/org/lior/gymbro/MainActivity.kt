@@ -24,6 +24,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var banner: TextView
     private lateinit var cameraOff: TextView
     private lateinit var scanner: QrScanner
+    /** A station page is being opened (a second tap or scan before it shows must not open another). */
+    private var opening = false
 
     private val permission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
         AppLog.i("main", "camera permission answered", "granted" to ok)
@@ -72,8 +74,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        opening = false
         scanner.enabled = true
-        scanner.reset()
+        scanner.blockLast()
         updateCamera()
         refresh()
     }
@@ -149,6 +152,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun openStation(id: String, source: String) {
+        if (opening) {
+            AppLog.i("main", "a station page is already opening", "id" to id, "source" to source)
+            return
+        }
+        opening = true
         scanner.enabled = false
         startActivity(Intent(this, StationActivity::class.java)
             .putExtra(StationActivity.EXTRA_ID, id).putExtra(StationActivity.EXTRA_SOURCE, source))

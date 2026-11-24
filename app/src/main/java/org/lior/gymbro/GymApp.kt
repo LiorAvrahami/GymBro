@@ -42,7 +42,7 @@ class GymApp : Application() {
     }
 
     /** Every screen's comings and goings go to the log. */
-    private object Lifecycle : ActivityLifecycleCallbacks {
+    private object Lifecycle : Application.ActivityLifecycleCallbacks {
         private fun log(a: Activity, what: String) = AppLog.i("screen", "${a.javaClass.simpleName} $what")
         override fun onActivityCreated(a: Activity, b: Bundle?) = log(a, if (b == null) "created" else "re-created")
         override fun onActivityStarted(a: Activity) = log(a, "started")

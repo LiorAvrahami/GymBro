@@ -223,8 +223,8 @@ class EditStationActivity : AppCompatActivity() {
             return
         }
         val qr = qrValue
-        val owner = qr?.let { Repo.data.stationByQr(it) }?.takeIf { it.id != editing?.id }
-        if (owner != null) {
+        val owner = if (qr == null) null else Repo.data.stationByQr(qr)?.takeIf { it.id != editing?.id }
+        if (qr != null && owner != null) {
             AppLog.i("edit", "the QR is on another station: asking", "qr" to qr, "owner" to owner.name)
             AlertDialog.Builder(this)
                 .setMessage("This QR code belongs to \"${owner.name}\". Move it to this station?")

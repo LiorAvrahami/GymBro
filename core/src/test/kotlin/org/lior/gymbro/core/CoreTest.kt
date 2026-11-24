@@ -26,7 +26,7 @@ class CoreTest {
     )
 
     @Test fun jsonRoundTrip() {
-        val d = GymData(createdAt = 5, savedAt = 6, saveCount = 7, stations = stations, uses = uses)
+        val d = GymData(createdAt = 5, savedAt = 6, saveCount = 7, stations = stations, uses = uses, deletedUseIds = listOf("x1"))
         val back = JsonCodec.decode(JsonCodec.encode(d))
         assertEquals(d, back)
     }
@@ -82,5 +82,31 @@ class CoreTest {
         assertEquals(0, days.first().sets)
         assertEquals(2, Stats.streak(uses, now, zone))
         assertEquals(4, Stats.total(uses, zone, LocalDate.of(2026, 11, 1), LocalDate.of(2026, 11, 30)).sets)
+    }
+
+    @Test fun mergeKeepsEverything() {
+        // the phone's copy: an older backup restored by Android, plus a set done before the folder was chosen again
+        val phone = GymData(createdAt = 100, savedAt = 500, saveCount = 9,
+            stations = listOf(stations[0], stations[1].copy(name = "Bench (old name)", updatedAt = 2)),
+            uses = listOf(uses[0], uses[1], StationUse("p1", "a", t(2026, 11, 25, 8), 9, 30.0, 4)))
+        // the folder's copy: newer, with a renamed station, a deleted set (u2) and more sets
+        val folder = GymData(createdAt = 100, savedAt = 400, saveCount = 12,
+            stations = listOf(stations[0], stations[1].copy(name = "Bench", updatedAt = 50), stations[3]),
+            uses = listOf(uses[0], uses[2], uses[3]), deletedUseIds = listOf("u2"))
+        val m = Merge.merge(phone, folder)
+        assertEquals(listOf("u1", "u3", "u4", "p1"), m.uses.map { it.id })
+        assertEquals("Bench", m.station("b")!!.name)
+        assertEquals(setOf("a", "b", "d"), m.stations.map { it.id }.toSet())
+        assertEquals(listOf("u2"), m.deletedUseIds)
+        assertEquals(500, m.savedAt)
+        assertEquals(12, m.saveCount)
+        assertEquals(m, Merge.merge(folder, phone).copy(stations = m.stations))
+        assertTrue(Merge.sameContent(m, Merge.merge(m, phone)))
+        assertTrue(!Merge.sameContent(m, phone))
+        // a deleted station stays deleted when the deletion is the newer change
+        val del = folder.copy(stations = folder.stations.map { if (it.id == "d") it.copy(deleted = true, updatedAt = 99) else it })
+        assertTrue(Merge.merge(phone, del).station("d")!!.deleted)
+        // different first-use dates: the older is kept
+        assertEquals(50, Merge.merge(phone.copy(createdAt = 50), folder).createdAt)
     }
 }

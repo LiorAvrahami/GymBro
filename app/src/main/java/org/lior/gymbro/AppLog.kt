@@ -99,12 +99,14 @@ object AppLog {
         if (f == null || !f.exists()) ByteArray(0) else f.readBytes()
     }
 
-    private fun jsonValue(v: Any?): Any = when (v) {
-        null -> JSONObject.NULL
-        is Number, is Boolean, is String, is JSONObject, is org.json.JSONArray -> v
-        is Collection<*> -> org.json.JSONArray().also { a -> v.forEach { a.put(jsonValue(it)) } }
-        is Map<*, *> -> JSONObject().also { o -> v.forEach { (k, x) -> o.put(k.toString(), jsonValue(x)) } }
-        else -> v.toString()
+    private fun jsonValue(v: Any?): Any {
+        if (v == null) return JSONObject.NULL
+        return when (v) {
+            is Number, is Boolean, is String, is JSONObject, is org.json.JSONArray -> v
+            is Collection<*> -> org.json.JSONArray().also { a -> for (x in v) a.put(jsonValue(x)) }
+            is Map<*, *> -> JSONObject().also { o -> for (e in v.entries) o.put(e.key.toString(), jsonValue(e.value)) }
+            else -> v.toString()
+        }
     }
 
     fun stackTrace(t: Throwable): String = StringWriter().also { t.printStackTrace(PrintWriter(it)) }.toString()

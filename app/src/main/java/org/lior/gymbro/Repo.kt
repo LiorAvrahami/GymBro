@@ -7,6 +7,7 @@ import android.os.SystemClock
 import androidx.documentfile.provider.DocumentFile
 import org.lior.gymbro.core.GymData
 import org.lior.gymbro.core.JsonCodec
+import org.lior.gymbro.core.Merge
 import org.lior.gymbro.core.Station
 import org.lior.gymbro.core.StationUse
 import java.io.File
@@ -22,8 +23,8 @@ import java.util.concurrent.Executors
  *  - the user's copy, in a folder the user chose once (Storage Access Framework, e.g. Documents/GymBro): the same files
  *    plus a daily backup (backups/) and the log. Android never deletes this folder, not on an update and not on
  *    uninstall; choosing the same folder after a reinstall brings everything back.
- * At startup the newer of the two copies (by savedAt) wins and the other is brought up to date. Every save writes the
- * app's copy at once and the folder's copy right after, on a background thread.
+ * At startup the two copies are merged (nothing is lost; see [Merge]) and each is brought up to date. Every save writes
+ * the app's copy at once and the folder's copy right after, on a background thread.
  */
 object Repo {
     const val DATA_FILE = "gymbro_data.json"
@@ -116,46 +117,39 @@ object Repo {
             "stations" to data.stations.size, "uses" to data.uses.size, "folder" to folderDescription())
     }
 
+    /**
+     * Makes the app's copy and the folder's copy one again (see [Merge]: nothing is lost, deletions are kept) and writes
+     * whichever of them lacks something.
+     */
     private fun reconcile(internal: GymData?, external: GymData?, folder: DocumentFile?, why: String) {
-        val report = StringBuilder("$why: app copy ")
-        report.append(internal?.let { "saved ${it.savedAt} (#${it.saveCount}, ${it.stations.size} stations, ${it.uses.size} sets)" } ?: "none")
-        report.append("; folder copy ")
-        report.append(when {
-            folder == null -> "no folder"
-            external == null -> "none"
-            else -> "saved ${external.savedAt} (#${external.saveCount}, ${external.stations.size} stations, ${external.uses.size} sets)"
-        })
-        val useExternal = external != null && (internal == null || newer(external, internal))
-        when {
-            useExternal -> {
-                data = external!!
-                report.append(" -> the folder's copy")
-                writeInternal(data)
-                pullImages(folder!!)
-                io.execute { pushImages() }
-            }
-            internal != null -> {
-                data = internal
-                report.append(" -> the app's copy")
-                if (folder != null) io.execute {
-                    if (external == null || newer(internal, external)) writeFolder(data, "reconcile")
-                    pushImages()
-                }
-            }
-            else -> {
-                data = GymData(createdAt = System.currentTimeMillis())
-                report.append(" -> new, empty data")
+        val merged = when {
+            internal == null && external == null -> null
+            internal == null -> external
+            external == null -> internal
+            else -> Merge.merge(internal, external)
+        }
+        val writeApp = merged != null && (internal == null || !Merge.sameContent(merged, internal))
+        val writeFolder = merged != null && folder != null && (external == null || !Merge.sameContent(merged, external))
+        data = merged ?: GymData(createdAt = System.currentTimeMillis())
+        loadReport = "$why: app copy: ${Merge.describe(internal)}; folder copy: " +
+            (if (folder == null) "no folder" else Merge.describe(external)) +
+            " -> ${Merge.describe(merged)}; writes: app=$writeApp folder=$writeFolder"
+        AppLog.i(TAG, "reconciled", "report" to loadReport)
+        if (writeApp) writeInternal(data)
+        if (external != null && folder != null) pullImages(folder)
+        if (folder != null) {
+            val d = data
+            io.execute {
+                if (writeFolder) writeFolder(d, "reconcile ($why)")
+                pushImages()
             }
         }
-        loadReport = report.toString()
-        AppLog.i(TAG, "reconciled", "report" to loadReport)
     }
-
-    private fun newer(a: GymData, b: GymData) = a.savedAt > b.savedAt || (a.savedAt == b.savedAt && a.saveCount > b.saveCount)
 
     /**
      * The user chose a folder (setup, or "change folder"). A folder that holds GymBro's data (or is called GymBro) is used
-     * as it is; otherwise a GymBro folder is made inside it. Returns what was found, for the setup page.
+     * as it is; otherwise a GymBro folder is made inside it. Data found there is merged with the app's. Returns what was
+     * found, for the setup page.
      */
     fun attachFolder(tree: Uri): String {
         val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
@@ -184,12 +178,14 @@ object Repo {
         AppLog.i(TAG, "folder attached", "tree" to tree.toString(), "name" to root.name, "sub" to sub,
             "foundData" to (external != null), "previous" to old?.toString())
         reconcile(internal, external, folder, "folder chosen")
-        return if (external != null && data === external)
-            "Found your GymBro data in this folder: ${external.activeStations.size} stations, ${external.uses.size} sets. It is loaded."
-        else if (external != null)
-            "This folder had older GymBro data; the newer data on this phone is kept and written to the folder."
-        else
-            "GymBro will keep your data in ${folderDescription()}."
+        val d = data
+        return when {
+            external == null -> "GymBro will keep your data in ${folderDescription()}."
+            internal == null || Merge.sameContent(d, external) ->
+                "Found your GymBro data in this folder: ${d.activeStations.size} stations, ${d.uses.size} sets. It is loaded."
+            else -> "Found GymBro data in this folder and joined it with the data on this phone: " +
+                "${d.activeStations.size} stations, ${d.uses.size} sets in all."
+        }
     }
 
     // ---------------------------------------------------------------- reading
@@ -347,7 +343,7 @@ object Repo {
 
     /** Waits until every write queued so far is done (the export waits for it). */
     fun flush() {
-        io.submit {}.get()
+        io.submit(Runnable {}).get()
     }
 
     // ---------------------------------------------------------------- changes
@@ -406,7 +402,7 @@ object Repo {
     fun deleteUse(id: String) {
         val u = data.uses.firstOrNull { it.id == id } ?: return
         AppLog.i(TAG, "set deleted", "use" to JsonCodec.useToJson(u))
-        save(data.copy(uses = data.uses.filter { it.id != id }), "set deleted")
+        save(data.copy(uses = data.uses.filter { it.id != id }, deletedUseIds = data.deletedUseIds + id), "set deleted")
     }
 
     // ---------------------------------------------------------------- diagnostics

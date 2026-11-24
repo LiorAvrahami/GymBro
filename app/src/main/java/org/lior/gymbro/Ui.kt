@@ -9,8 +9,9 @@ import android.util.LruCache
 import android.view.View
 import android.widget.ImageView
 import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Date
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 import java.util.concurrent.Executors
 import kotlin.math.roundToInt
@@ -68,13 +69,15 @@ object ImageLoader {
 }
 
 object Fmt {
-    private val time = SimpleDateFormat("HH:mm", Locale.getDefault())
-    private val date = SimpleDateFormat("EEE d MMM yyyy", Locale.getDefault())
-    private val dateTime = SimpleDateFormat("d MMM yyyy HH:mm", Locale.getDefault())
+    // java.time's formatters can be shared between threads (the export runs on its own)
+    private val time = DateTimeFormatter.ofPattern("HH:mm", Locale.getDefault())
+    private val date = DateTimeFormatter.ofPattern("EEE d MMM yyyy", Locale.getDefault())
+    private val dateTime = DateTimeFormatter.ofPattern("d MMM yyyy HH:mm", Locale.getDefault())
 
-    fun time(ms: Long): String = time.format(Date(ms))
-    fun date(ms: Long): String = date.format(Date(ms))
-    fun dateTime(ms: Long): String = if (ms <= 0) "never" else dateTime.format(Date(ms))
+    private fun at(ms: Long) = Instant.ofEpochMilli(ms).atZone(ZoneId.systemDefault())
+    fun time(ms: Long): String = time.format(at(ms))
+    fun date(ms: Long): String = date.format(at(ms))
+    fun dateTime(ms: Long): String = if (ms <= 0) "never" else dateTime.format(at(ms))
 
     fun ago(ms: Long, now: Long = System.currentTimeMillis()): String {
         val s = (now - ms) / 1000
